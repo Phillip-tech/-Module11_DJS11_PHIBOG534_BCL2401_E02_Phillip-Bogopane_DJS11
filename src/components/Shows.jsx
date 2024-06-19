@@ -31,5 +31,22 @@ export default function Shows() {
             });
     };
 
+    const seasonAddress = (showId) => {
+        // You can perform actions here related to the selected show's ID (showId)
+        // For now, we will just set the seasonsData to the selected show's ID
+        setSeasonsData(showId);
+    };
+
+    return (
+        <>
+            <Season seasonAPI={seasonsData} />
+            <div className="shows-list">
+                {showData ? showData : <sl-spinner></sl-spinner>}
+            </div>
+        </>
+    );
+}
+
+
 
     
