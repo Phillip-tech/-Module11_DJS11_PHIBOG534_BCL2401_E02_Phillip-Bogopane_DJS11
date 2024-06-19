@@ -12,4 +12,24 @@ export default function Shows() {
     
     })
 
+    const fetchData = () => {
+        fetch("https://podcast-api.netlify.app/shows")
+            .then(response => response.json())
+            .then(data => {
+                const mappedShows = data.map(mapShow => (
+                    <ShowBody
+                        key={mapShow.id}
+                        click={() => seasonAddress(mapShow.id)}
+                        {...mapShow}
+                    />
+                ));
+                setShowData(mappedShows);
+            })
+            .catch(error => {
+                console.error("Error fetching data:", error);
+                // Handle the error (e.g., display an error message or retry the fetch)
+            });
+    };
+
+
     
