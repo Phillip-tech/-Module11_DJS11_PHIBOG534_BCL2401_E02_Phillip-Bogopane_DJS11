@@ -12,3 +12,18 @@ const Main = () => {
   const [selectedPodcast, setSelectedPodcast] = useState(null);
   const [sortBy, setSortBy] = useState('default');
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+
+    fetch('https://podcast-api.netlify.app/shows')
+      .then((res) => res.json())
+      .then((data) => {
+
+        setPodcasts(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error fetching data:', error);
+        setLoading(false);
+      });
+  }, []);
