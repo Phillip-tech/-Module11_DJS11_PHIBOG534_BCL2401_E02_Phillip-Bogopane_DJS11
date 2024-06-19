@@ -31,3 +31,24 @@ const Main = () => {
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
   };
+
+  const handleSortChange = (criteria) => {
+    setSortBy(criteria);
+    let sortedShows = [...ShowPreviews];
+    switch (criteria) {
+      case 'titleAZ':
+        sortedShows.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case 'titleZA':
+        sortedShows.sort((a, b) => b.title.localeCompare(a.title));
+        break;
+      case 'dateUpdatedAscending':
+        sortedShows.sort((a, b) => new Date(a.updated) - new Date(b.updated));
+        break;
+      case 'dateUpdatedDescending':
+        sortedShows.sort((a, b) => new Date(b.updated) - new Date(a.updated));
+        break;
+      default:
+        break;
+    }
+  };
