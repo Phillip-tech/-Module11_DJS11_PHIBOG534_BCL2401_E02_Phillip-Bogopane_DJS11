@@ -52,3 +52,22 @@ const Main = () => {
         break;
     }
   };
+
+  return (
+    <>
+      <Navbar />
+      <Sort />
+
+      {selectedPodcast && (
+        <div className="selected-podcast-details">
+          <img src={selectedPodcast.image} alt={selectedPodcast.title} />
+          <h2>Title:{selectedPodcast.title}</h2>
+          <p>Id:{selectedPodcast.id}</p>
+          <p>Updated:{selectedPodcast.updated}</p>
+          <p>Season :{selectedPodcast.seasons}</p>
+          <p>Description:{selectedPodcast.description}</p>
+
+          <button onClick={clearSelectedPodcast}>Close</button>
+        </div>
+      )}
+      
