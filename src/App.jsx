@@ -81,3 +81,13 @@ const Main = () => {
             <select
               value={selectedSeason}
               onChange={(e) => setSelectedSeason(Number(e.target.value))}
+              >
+              <option value={null}>All Seasons</option>
+              {/* Assuming seasons are numbered from 1 to N */}
+              {Array.from({ length: 70 }).map((_, index) => (
+                <option key={index} value={index + 1}>
+                  Season {index + 1}
+                </option>
+              ))}
+            </select>
+          </div>
