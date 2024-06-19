@@ -91,3 +91,25 @@ const Main = () => {
               ))}
             </select>
           </div>
+
+          <div className="podcast-list">
+
+            {selectedSeason === null
+              ? podcasts.map((podcast) => (
+                <div
+                  key={podcast.id}
+                  className="podcast-card"
+                  onClick={() => handlePodcastCardClick(podcast)}
+                >
+                  {
+                  
+                  podcast.image && (
+                    <img src={podcast.image} alt={podcast.title} />
+                  )}
+                  <h2>{podcast.title}</h2>
+                  {/* Render the audio player for each episode */}
+                  <audio controls>
+                    <source src={podcast.audio} type="audio/mpeg" />
+                    Your browser does not support the audio element.
+                  </audio>
+                </div>
