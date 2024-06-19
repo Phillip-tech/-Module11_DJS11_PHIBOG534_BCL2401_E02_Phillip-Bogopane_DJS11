@@ -27,3 +27,7 @@ const Main = () => {
         setLoading(false);
       });
   }, []);
+
+  const handleSearchChange = (event) => {
+    setSearchQuery(event.target.value);
+  };
