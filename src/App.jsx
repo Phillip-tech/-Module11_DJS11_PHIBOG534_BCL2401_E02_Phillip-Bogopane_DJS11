@@ -113,3 +113,35 @@ const Main = () => {
                     Your browser does not support the audio element.
                   </audio>
                 </div>
+                ))
+                : getEpisodesForSeason(selectedSeason).sort((a, b) => a.title.localeCompare(b.title))
+                  .map((podcast) => (
+                    <div key={podcast.id}
+                      className="podcast-card"
+                      onClick={() => handlePodcastCardClick(podcast)}
+                    >
+                      {podcast.image && (
+                        <img src={podcast.image} alt={podcast.title} />
+                      )}
+                      <h2>{podcast.title}</h2>
+                      <audio controls>
+                        <source src={podcast.audio} type="audio/mpeg" />
+                        Your browser does not support the audio element.
+                      </audio>
+                    </div>
+                  ))}
+            </div>
+          </div>
+        )}
+  
+  
+  
+      </>
+    );
+  };
+  
+  export default Main;
+  
+  
+  
+  
