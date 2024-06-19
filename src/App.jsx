@@ -70,4 +70,14 @@ const Main = () => {
           <button onClick={clearSelectedPodcast}>Close</button>
         </div>
       )}
-      
+
+{loading ? (
+        <div className="loading-message">Loading...</div>
+      ) : (
+        <div className="podcast-container">
+
+          <div className="season-selector">
+            {/* Dropdown or buttons to select the season */}
+            <select
+              value={selectedSeason}
+              onChange={(e) => setSelectedSeason(Number(e.target.value))}
