@@ -10,3 +10,9 @@ const genreTitleMapping = {
   8: 'News',
   9: 'Kids and Family',
 };
+const SearchSort = ({ searchQuery, handleSearchChange, sortBy, handleSortChange }) => {
+  const [sortState, setSortState] = useState(sortBy);
+  const sortShows = (criteria) => {
+    setSortState(criteria);
+    handleSortChange(criteria);
+  };
