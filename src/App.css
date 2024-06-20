@@ -1,5 +1,6 @@
 .podcast-container {
   max-width: 1000px;
+  height: 10px;
   margin: 0 auto;
   padding: 20px;
 }
@@ -17,8 +18,8 @@
   /* Display 3 cards in one row with 20px spacing */
   border: 1px solid #ccc;
   border-radius: 5px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 40px;
+  box-shadow: 0 2px 5px rgb(46, 48, 73);
 }
 .selected-podcast-details .img{
   width:fit-content;

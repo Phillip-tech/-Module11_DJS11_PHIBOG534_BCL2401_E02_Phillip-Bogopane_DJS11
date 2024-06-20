@@ -3,7 +3,7 @@ export default function Navbar() {
     return (
         <nav className="nav">
             
-            <a href="/" className="Site-title">Podcast Corner</a>
+            <a href="/" className="Site-title">Podcast Avenue</a>
             <img href="/" className="logo"  src="./public/Daco_4436880.png"/>
           
             <ul >

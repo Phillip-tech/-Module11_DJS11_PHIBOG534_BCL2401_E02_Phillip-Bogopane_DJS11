@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import "./App.css";
 import Navbar from './Navbar';
-import {Link} from 'react-router-dom'
-import Sort from './components/Sort'
-
+import Sort from './components/Sort';
 
 const Main = () => {
   const [podcasts, setPodcasts] = useState([]);
@@ -14,11 +12,9 @@ const Main = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-
     fetch('https://podcast-api.netlify.app/shows')
       .then((res) => res.json())
       .then((data) => {
-
         setPodcasts(data);
         setLoading(false);
       })
@@ -34,7 +30,7 @@ const Main = () => {
 
   const handleSortChange = (criteria) => {
     setSortBy(criteria);
-    let sortedShows = [...ShowPreviews];
+    let sortedShows = [...podcasts];
     switch (criteria) {
       case 'titleAZ':
         sortedShows.sort((a, b) => a.title.localeCompare(b.title));
@@ -51,39 +47,40 @@ const Main = () => {
       default:
         break;
     }
+    setPodcasts(sortedShows);
+  };
+
+  const getEpisodesForSeason = (season) => {
+    return podcasts.filter(podcast => podcast.season === season);
   };
 
   return (
     <>
       <Navbar />
-      <Sort />
+      <Sort searchQuery={searchQuery} handleSearchChange={handleSearchChange} sortBy={sortBy} handleSortChange={handleSortChange} />
 
       {selectedPodcast && (
         <div className="selected-podcast-details">
           <img src={selectedPodcast.image} alt={selectedPodcast.title} />
-          <h2>Title:{selectedPodcast.title}</h2>
-          <p>Id:{selectedPodcast.id}</p>
-          <p>Updated:{selectedPodcast.updated}</p>
-          <p>Season :{selectedPodcast.seasons}</p>
-          <p>Description:{selectedPodcast.description}</p>
-
-          <button onClick={clearSelectedPodcast}>Close</button>
+          <h2>Title: {selectedPodcast.title}</h2>
+          <p>Id: {selectedPodcast.id}</p>
+          <p>Updated: {selectedPodcast.updated}</p>
+          <p>Season: {selectedPodcast.seasons}</p>
+          <p>Description: {selectedPodcast.description}</p>
+          <button onClick={() => setSelectedPodcast(null)}>Close</button>
         </div>
       )}
 
-{loading ? (
+      {loading ? (
         <div className="loading-message">Loading...</div>
       ) : (
         <div className="podcast-container">
-
           <div className="season-selector">
-            {/* Dropdown or buttons to select the season */}
             <select
-              value={selectedSeason}
+              value={selectedSeason !== null ? selectedSeason : ""}
               onChange={(e) => setSelectedSeason(Number(e.target.value))}
-              >
-              <option value={null}>All Seasons</option>
-              {/* Assuming seasons are numbered from 1 to N */}
+            >
+              <option value="">All Seasons</option>
               {Array.from({ length: 70 }).map((_, index) => (
                 <option key={index} value={index + 1}>
                   Season {index + 1}
@@ -93,32 +90,30 @@ const Main = () => {
           </div>
 
           <div className="podcast-list">
-
             {selectedSeason === null
               ? podcasts.map((podcast) => (
-                <div
-                  key={podcast.id}
-                  className="podcast-card"
-                  onClick={() => handlePodcastCardClick(podcast)}
-                >
-                  {
-                  
-                  podcast.image && (
-                    <img src={podcast.image} alt={podcast.title} />
-                  )}
-                  <h2>{podcast.title}</h2>
-                  {/* Render the audio player for each episode */}
-                  <audio controls>
-                    <source src={podcast.audio} type="audio/mpeg" />
-                    Your browser does not support the audio element.
-                  </audio>
-                </div>
+                  <div
+                    key={podcast.id}
+                    className="podcast-card"
+                    onClick={() => setSelectedPodcast(podcast)}
+                  >
+                    {podcast.image && (
+                      <img src={podcast.image} alt={podcast.title} />
+                    )}
+                    <h2>{podcast.title}</h2>
+                    <audio controls>
+                      <source src={podcast.audio} type="audio/mpeg" />
+                      Your browser does not support the audio element.
+                    </audio>
+                  </div>
                 ))
-                : getEpisodesForSeason(selectedSeason).sort((a, b) => a.title.localeCompare(b.title))
+              : getEpisodesForSeason(selectedSeason)
+                  .sort((a, b) => a.title.localeCompare(b.title))
                   .map((podcast) => (
-                    <div key={podcast.id}
+                    <div
+                      key={podcast.id}
                       className="podcast-card"
-                      onClick={() => handlePodcastCardClick(podcast)}
+                      onClick={() => setSelectedPodcast(podcast)}
                     >
                       {podcast.image && (
                         <img src={podcast.image} alt={podcast.title} />
@@ -130,18 +125,11 @@ const Main = () => {
                       </audio>
                     </div>
                   ))}
-            </div>
           </div>
-        )}
-  
-  
-  
-      </>
-    );
-  };
-  
-  export default Main;
-  
-  
-  
-  
+        </div>
+      )}
+    </>
+  );
+};
+
+export default Main;
