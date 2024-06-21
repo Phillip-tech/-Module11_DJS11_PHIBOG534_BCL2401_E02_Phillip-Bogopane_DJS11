@@ -1,7 +1,7 @@
 
 ## Overview
 
-Welcome to the Podcast Player Project! This project was designed to create a comprehensive podcast player application where users can browse, search, and listen to a variety of podcast shows. The app provides a rich user experience with features like sorting, searching, favoriting episodes, and more. Unfortunately, due to time constraints and the complexity of some features, the project remains unfinished. Nevertheless, it offers a strong foundation for further development.
+Welcome to the Podcast Player Project! This project was designed to create a comprehensive podcast player application where users can browse, search, and listen to a variety of podcast shows. The app provides a rich user experience with features like sorting, searching, favoriting episodes, and more. Unfortunately, due to time constraints and the complexity of some features, the project remains unfinished. Nevertheless, it offers a strong foundation for further development.The project has been deployed on netlify.
 
 ## Technologies Used
 - Visual Studio Code (VS Code)
