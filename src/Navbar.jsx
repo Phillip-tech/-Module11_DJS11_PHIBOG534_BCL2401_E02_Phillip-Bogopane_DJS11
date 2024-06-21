@@ -4,7 +4,7 @@ export default function Navbar() {
         <nav className="nav">
             
             <a href="/" className="Site-title">Podcast Avenue</a>
-            <img href="/" className="logo"  src="./public/Daco_4436880.png"/>
+            <img href="/" className="logo"  src="./public/Podcast.jpeg"/>
           
             <ul >
                 <li>

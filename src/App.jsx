@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import Fuse from 'fuse.js';
 import "./App.css";
 import Navbar from './Navbar';
 import Sort from './components/Sort';
+import "react-responsive-carousel/lib/styles/carousel.min.css"; // Import carousel styles
+import { Carousel } from 'react-responsive-carousel';
 
 const Main = () => {
   const [podcasts, setPodcasts] = useState([]);
@@ -10,18 +13,50 @@ const Main = () => {
   const [selectedPodcast, setSelectedPodcast] = useState(null);
   const [sortBy, setSortBy] = useState('default');
   const [searchQuery, setSearchQuery] = useState('');
+  const [listenedEpisodes, setListenedEpisodes] = useState([]);
+  const [favorites, setFavorites] = useState([]);
+  const audioRef = useRef(null);
+  
 
   useEffect(() => {
     fetch('https://podcast-api.netlify.app/shows')
       .then((res) => res.json())
       .then((data) => {
-        setPodcasts(data);
+        const processedData = data.map(podcast => ({
+          ...podcast,
+          genres: podcast.genres.map(genre => typeof genre === 'string' ? genre : genre.toString()),
+          seasons: Array.isArray(podcast.seasons) ? podcast.seasons : [podcast.seasons]
+        }));
+        setPodcasts(processedData);
         setLoading(false);
       })
       .catch((error) => {
         console.error('Error fetching data:', error);
         setLoading(false);
       });
+  }, []);
+
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      if (audioRef.current && !audioRef.current.paused) {
+        event.preventDefault();
+        event.returnValue = 'Audio is playing. Are you sure you want to leave?';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
+
+  useEffect(() => {
+    const storedListenedEpisodes = JSON.parse(localStorage.getItem('listenedEpisodes')) || [];
+    setListenedEpisodes(storedListenedEpisodes);
+
+    const storedFavorites = JSON.parse(localStorage.getItem('favorites')) || [];
+    setFavorites(storedFavorites);
   }, []);
 
   const handleSearchChange = (event) => {
@@ -51,9 +86,70 @@ const Main = () => {
   };
 
   const getEpisodesForSeason = (season) => {
-    return podcasts.filter(podcast => podcast.season === season);
+    return podcasts.filter(podcast => podcast.seasons.includes(season));
   };
 
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
+  const handlePodcastClick = (podcast) => {
+    setSelectedPodcast(podcast);
+    if (audioRef.current) {
+      audioRef.current.play();
+    }
+  };
+
+  const handleAudioEnded = (podcastId) => {
+    const updatedListenedEpisodes = [...listenedEpisodes, podcastId];
+    setListenedEpisodes(updatedListenedEpisodes);
+    localStorage.setItem('listenedEpisodes', JSON.stringify(updatedListenedEpisodes));
+  };
+
+  const toggleFavorite = (podcastId) => {
+    let updatedFavorites;
+    if (favorites.includes(podcastId)) {
+      updatedFavorites = favorites.filter(id => id !== podcastId);
+    } else {
+      updatedFavorites = [...favorites, podcastId];
+    }
+    setFavorites(updatedFavorites);
+    localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+  };
+
+  const fuse = new Fuse(podcasts, {
+    keys: ['title', 'description', 'genres']
+  });
+
+  const filteredPodcasts = searchQuery ? fuse.search(searchQuery).map(result => result.item) : podcasts;
+
+  const [carouselData, setCarouselData] = useState([]);
+  const renderSeasonsCarousel = () => {
+    if (!carouselData.length) return null;
+
+    useEffect(() => {
+      fetch('https://podcast-api.netlify.app/carousel')
+        .then((res) => res.json())
+        .then((data) => {
+          setCarouselData(data);
+        })
+        .catch((error) => {
+          console.error('Error fetching carousel data:', error);
+        });
+    }, []);
+  
+    return (
+      <Carousel showThumbs={false} showStatus={false} infiniteLoop>
+        {carouselData.map(podcast => (
+          <div key={podcast.id} className="season-icon" onClick={() => handlePodcastClick(podcast)}>
+            <img src={podcast.image} alt={podcast.title} />
+            <p className="legend">{podcast.title}</p>
+          </div>
+        ))}
+      </Carousel>
+    );
+  };
   return (
     <>
       <Navbar />
@@ -64,10 +160,19 @@ const Main = () => {
           <img src={selectedPodcast.image} alt={selectedPodcast.title} />
           <h2>Title: {selectedPodcast.title}</h2>
           <p>Id: {selectedPodcast.id}</p>
-          <p>Updated: {selectedPodcast.updated}</p>
-          <p>Season: {selectedPodcast.seasons}</p>
+          <p>Updated: {formatDate(selectedPodcast.updated)}</p>
+          <p>Season: {selectedPodcast.seasons.join(', ')}</p>
           <p>Description: {selectedPodcast.description}</p>
+          <p>Genres: {selectedPodcast.genres.join(', ')}</p>
           <button onClick={() => setSelectedPodcast(null)}>Close</button>
+          <audio ref={audioRef} controls onEnded={() => handleAudioEnded(selectedPodcast.id)}>
+            <source src={selectedPodcast.audio} type="audio/mpeg" />
+            Your browser does not support the audio element.
+          </audio>
+          <button onClick={() => toggleFavorite(selectedPodcast.id)}>
+            {favorites.includes(selectedPodcast.id) ? 'Unfavorite' : 'Favorite'}
+          </button>
+          {renderSeasonsCarousel()}
         </div>
       )}
 
@@ -91,20 +196,25 @@ const Main = () => {
 
           <div className="podcast-list">
             {selectedSeason === null
-              ? podcasts.map((podcast) => (
+              ? filteredPodcasts.map((podcast) => (
                   <div
                     key={podcast.id}
-                    className="podcast-card"
-                    onClick={() => setSelectedPodcast(podcast)}
+                    className={`podcast-card ${listenedEpisodes.includes(podcast.id) ? 'listened' : ''}`}
+                    onClick={() => handlePodcastClick(podcast)}
                   >
                     {podcast.image && (
                       <img src={podcast.image} alt={podcast.title} />
                     )}
                     <h2>{podcast.title}</h2>
-                    <audio controls>
+                    <p>Seasons: {podcast.seasons.join(', ')}</p>
+                    <p>Updated: {formatDate(podcast.updated)}</p>
+                    <audio controls onEnded={() => handleAudioEnded(podcast.id)}>
                       <source src={podcast.audio} type="audio/mpeg" />
                       Your browser does not support the audio element.
                     </audio>
+                    <button onClick={() => toggleFavorite(podcast.id)}>
+                      {favorites.includes(podcast.id) ? 'Unfavorite' : 'Favorite'}
+                    </button>
                   </div>
                 ))
               : getEpisodesForSeason(selectedSeason)
@@ -112,22 +222,27 @@ const Main = () => {
                   .map((podcast) => (
                     <div
                       key={podcast.id}
-                      className="podcast-card"
-                      onClick={() => setSelectedPodcast(podcast)}
+                      className={`podcast-card ${listenedEpisodes.includes(podcast.id) ? 'listened' : ''}`}
+                      onClick={() => handlePodcastClick(podcast)}
                     >
                       {podcast.image && (
                         <img src={podcast.image} alt={podcast.title} />
                       )}
                       <h2>{podcast.title}</h2>
-                      <audio controls>
-                        <source src={podcast.audio} type="audio/mpeg" />
-                        Your browser does not support the audio element.
-                      </audio>
+                      <p>Seasons: {podcast.seasons.join(', ')}</p>
+                      <p>Updated: {formatDate(podcast.updated)}</p>
+                      <audio ref={audioRef} controls onEnded={() => handleAudioEnded(podcast.id)}>
+                      <source src={podcast.audio} type="audio/mpeg" />
+                      Your browser does not support the audio element.
+                    </audio>
+                      <button onClick={() => toggleFavorite(podcast.id)}>
+                        {favorites.includes(podcast.id) ? 'Unfavorite' : 'Favorite'}
+                      </button>
                     </div>
                   ))}
           </div>
         </div>
-      )}
+      )}  
     </>
   );
 };
